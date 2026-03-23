@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { PLANETS, PlanetInfo } from "@/lib/planetData";
-import Footer from "./Footer";
 
 interface Props {
   onSelect: (planet: PlanetInfo) => void;
@@ -45,7 +44,6 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
           ))}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
