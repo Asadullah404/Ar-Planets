@@ -42,6 +42,14 @@ export function useDeviceOrientation() {
     let az = Math.atan2(vx, vy) / rad;
     if (az < 0) az += 360;
 
+    // If iOS gives us absolute magnetic compass heading, override the relative geometric math
+    if (typeof (e as any).webkitCompassHeading === "number") {
+      const heading = (e as any).webkitCompassHeading;
+      const screenAngle = (window.screen?.orientation?.angle || window.orientation || 0) as number;
+      // Subtract screen orientation so azimuth always represents the back camera
+      az = (heading - screenAngle + 360) % 360;
+    }
+
     setOrientation({
       alpha: alphaAngles,
       beta: betaAngles,
@@ -58,7 +66,8 @@ export function useDeviceOrientation() {
         const result = await DOE.requestPermission();
         if (result === "granted") {
           setPermissionState("granted");
-          window.addEventListener("deviceorientation", handler, true);
+          const eventName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
+          window.addEventListener(eventName, handler, true);
         } else {
           setPermissionState("denied");
         }
@@ -68,7 +77,8 @@ export function useDeviceOrientation() {
     } else {
       // Android or desktop — no permission needed
       setPermissionState("granted");
-      window.addEventListener("deviceorientation", handler, true);
+      const eventName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
+      window.addEventListener(eventName, handler, true);
     }
   };
 
@@ -79,11 +89,12 @@ export function useDeviceOrientation() {
     }
     // On non-iOS, just start listening
     const DOE = DeviceOrientationEvent as any;
+    const eventName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
     if (typeof DOE.requestPermission !== "function") {
       setPermissionState("granted");
-      window.addEventListener("deviceorientation", handler, true);
+      window.addEventListener(eventName, handler, true);
     }
-    return () => window.removeEventListener("deviceorientation", handler, true);
+    return () => window.removeEventListener(eventName, handler, true);
   }, [handler]);
 
   return { orientation, permissionState, requestPermission };
