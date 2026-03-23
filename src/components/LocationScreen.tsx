@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Footer from "./Footer";
 
 interface Props {
   onLocationSet: (lat: number, lng: number) => void;
@@ -134,6 +135,7 @@ export default function LocationScreen({ onLocationSet }: Props) {
           </motion.p>
         )}
       </motion.div>
+      <Footer />
     </div>
   );
 }

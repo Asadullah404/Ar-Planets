@@ -42,11 +42,11 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
   let aligned = false;
 
   if (body) {
-    let azDiff = body.azimuth - orientation.alpha;
+    let azDiff = body.azimuth - orientation.camAzimuth;
     if (azDiff > 180) azDiff -= 360;
     if (azDiff < -180) azDiff += 360;
 
-    const altDiff = body.altitude - orientation.beta;
+    const altDiff = body.altitude - orientation.camAltitude;
 
     const rawX = cx + azDiff * SCALE;
     const rawY = cy - altDiff * SCALE;
@@ -66,7 +66,7 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
     aligned = dist < 30 && !offScreen;
 
     if (aligned && !hasVibrated.current) {
-      try { navigator.vibrate?.(200); } catch {}
+      try { navigator.vibrate?.(200); } catch { }
       hasVibrated.current = true;
     }
     if (!aligned) hasVibrated.current = false;
@@ -133,7 +133,7 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
         {/* Compass Ring - top center */}
         <div className="pointer-events-auto absolute left-1/2 top-4 -translate-x-1/2">
           <CompassRing
-            phoneAzimuth={orientation.alpha}
+            phoneAzimuth={orientation.camAzimuth}
             planetAzimuth={body?.azimuth ?? 0}
           />
         </div>
@@ -141,7 +141,7 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
         {/* Tilt Gauge - right side */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <TiltGauge
-            phoneTilt={orientation.beta}
+            phoneTilt={orientation.camAltitude}
             planetAltitude={body?.altitude ?? 0}
           />
         </div>
@@ -149,11 +149,10 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
         {/* Center target dot */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div
-            className={`pulse-dot h-5 w-5 rounded-full border-2 ${
-              aligned
-                ? "border-horizon-green bg-horizon-green/30 glow-green"
-                : "border-primary bg-primary/20"
-            }`}
+            className={`pulse-dot h-5 w-5 rounded-full border-2 ${aligned
+              ? "border-horizon-green bg-horizon-green/30 glow-green"
+              : "border-primary bg-primary/20"
+              }`}
           />
         </div>
 
