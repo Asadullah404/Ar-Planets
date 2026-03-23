@@ -46,7 +46,10 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
     if (azDiff > 180) azDiff -= 360;
     if (azDiff < -180) azDiff += 360;
 
-    const altDiff = body.altitude - orientation.beta;
+    // DeviceOrientation beta is ~90° when the phone is held upright (portrait).
+    // To make 0° altitude = straight ahead, we subtract 90 from beta.
+    const effectiveTilt = orientation.beta - 90;
+    const altDiff = body.altitude - effectiveTilt;
 
     const rawX = cx + azDiff * SCALE;
     const rawY = cy - altDiff * SCALE;
@@ -66,7 +69,7 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
     aligned = dist < 30 && !offScreen;
 
     if (aligned && !hasVibrated.current) {
-      try { navigator.vibrate?.(200); } catch {}
+      try { navigator.vibrate?.(200); } catch { }
       hasVibrated.current = true;
     }
     if (!aligned) hasVibrated.current = false;
@@ -149,11 +152,10 @@ export default function ARFinderScreen({ lat, lng, planet, onBack }: Props) {
         {/* Center target dot */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div
-            className={`pulse-dot h-5 w-5 rounded-full border-2 ${
-              aligned
-                ? "border-horizon-green bg-horizon-green/30 glow-green"
-                : "border-primary bg-primary/20"
-            }`}
+            className={`pulse-dot h-5 w-5 rounded-full border-2 ${aligned
+              ? "border-horizon-green bg-horizon-green/30 glow-green"
+              : "border-primary bg-primary/20"
+              }`}
           />
         </div>
 
