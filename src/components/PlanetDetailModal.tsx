@@ -18,6 +18,8 @@ const Row = ({ label, value, accent }: { label: string; value: string; accent?: 
 );
 
 export default function PlanetDetailModal({ body, planet, onClose }: Props) {
+    const isQibla = planet.name.includes("Kaaba");
+
     const compassDir = (az: number) => {
         const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
         return dirs[Math.round(az / 45) % 8];
@@ -52,7 +54,7 @@ export default function PlanetDetailModal({ body, planet, onClose }: Props) {
                     {/* Header */}
                     <div
                         className="px-5 pt-5 pb-4"
-                        style={{ background: `linear-gradient(135deg, ${planet.color}22, transparent)` }}
+                        style={{ background: `linear-gradient(135deg, ${isQibla ? "hsl(48, 95%, 55%)" : planet.color}22, transparent)` }}
                     >
                         <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-border/50" />
                         <div className="flex items-center justify-between">
@@ -80,45 +82,48 @@ export default function PlanetDetailModal({ body, planet, onClose }: Props) {
                             {planet.description}
                         </p>
 
-                        {/* Live Sky Position */}
-                        <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                            <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-widest text-primary">
-                                🔭 Live Sky Position
+                        {/* Live Sky / Qibla Position */}
+                        <div className={`mb-4 rounded-2xl border p-4 ${
+                            isQibla ? "border-amber-500/30 bg-amber-500/10" : "border-primary/20 bg-primary/5"
+                        }`}>
+                            <h3 className={`mb-3 font-display text-xs font-bold uppercase tracking-widest ${
+                                isQibla ? "text-amber-300" : "text-primary"
+                            }`}>
+                                {isQibla ? "🕋 Live Qibla Direction & Distance" : "🔭 Live Sky Position"}
                             </h3>
-                            <Row label="Altitude" value={`${body.altitude.toFixed(2)}° — ${altDescription(body.altitude)}`} accent />
-                            <Row label="Azimuth" value={`${body.azimuth.toFixed(2)}° ${compassDir(body.azimuth)}`} accent />
-                            <Row label="Constellation" value={body.constellation} />
+                            <Row label="Qibla Bearing (Azimuth)" value={`${body.azimuth.toFixed(2)}° ${compassDir(body.azimuth)}`} accent />
+                            <Row label={isQibla ? "Distance to Mecca" : "Altitude"} value={body.distanceKm || `${body.altitude.toFixed(2)}° — ${altDescription(body.altitude)}`} accent />
+                            <Row label="Location" value={body.constellation} />
                             <Row
-                                label="Visibility"
-                                value={body.aboveHorizon ? "✓ Above horizon" : "✗ Below horizon"}
+                                label="Status"
+                                value={isQibla ? "✓ Active Qibla Direction" : body.aboveHorizon ? "✓ Above horizon" : "✗ Below horizon"}
                                 accent={body.aboveHorizon}
                             />
                         </div>
 
-                        {/* Physical Details */}
+                        {/* Physical / Structure Details */}
                         <div className="mb-4 rounded-2xl border border-border/40 bg-muted/30 p-4">
                             <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-widest text-foreground">
-                                🪐 Physical Data
+                                {isQibla ? "🕋 Structure & Location Data" : "🪐 Physical Data"}
                             </h3>
                             <Row label="Type" value={planet.type} />
-                            <Row label="Diameter" value={planet.diameter} />
-                            <Row label="Avg. Distance from Earth" value={planet.distance} />
-                            <Row label="Moons" value={planet.moons === 0 ? "None" : planet.moons.toString()} />
-                            <Row label="Surface / Cloud Temp" value={planet.surfaceTemp} />
+                            <Row label="Dimensions / Diameter" value={planet.diameter} />
+                            <Row label="Distance" value={body.distanceKm || planet.distance} />
+                            <Row label={isQibla ? "Climate" : "Surface Temp"} value={planet.surfaceTemp} />
                         </div>
 
-                        {/* Orbital Details */}
+                        {/* Orbital / Coordinates Details */}
                         <div className="rounded-2xl border border-border/40 bg-muted/30 p-4">
                             <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-widest text-foreground">
-                                🔄 Orbital Data
+                                {isQibla ? "📍 Coordinates" : "🔄 Orbital Data"}
                             </h3>
-                            <Row label="Orbital Period" value={planet.orbitalPeriod} />
-                            <Row label="Rotation Period" value={planet.rotationPeriod} />
+                            <Row label={isQibla ? "Mecca Latitude" : "Orbital Period"} value={isQibla ? "21.4225° N" : planet.orbitalPeriod} />
+                            <Row label={isQibla ? "Mecca Longitude" : "Rotation Period"} value={isQibla ? "39.8262° E" : planet.rotationPeriod} />
                         </div>
 
                         {/* Fun fact */}
-                        <div className="mt-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3">
-                            <span className="font-body text-xs text-secondary">💡 {planet.fact}</span>
+                        <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                            <span className="font-body text-xs text-amber-200">💡 {planet.fact}</span>
                         </div>
                     </div>
                 </motion.div>

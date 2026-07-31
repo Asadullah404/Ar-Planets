@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { calculateCelestialPosition, CalculatedPosition } from "@/lib/astroCalc";
 
 export interface CelestialBody {
   name: string;
@@ -6,6 +7,8 @@ export interface CelestialBody {
   azimuth: number;
   constellation: string;
   aboveHorizon: boolean;
+  distanceKm?: string;
+  extraDetails?: string;
 }
 
 export function usePlanetPosition(lat: number, lng: number, planetName: string) {
@@ -13,42 +16,32 @@ export function usePlanetPosition(lat: number, lng: number, planetName: string) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPosition = useCallback(async () => {
-    setLoading(true);
+  const calculatePosition = useCallback(() => {
     try {
-      const res = await fetch(
-        `https://api.visibleplanets.dev/v3?latitude=${lat}&longitude=${lng}&showCoords=true`
-      );
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      const bodies: any[] = data.data || data;
-      const match = bodies.find(
-        (b: any) => b.name.toLowerCase() === planetName.toLowerCase()
-      );
-      if (match) {
-        setBody({
-          name: match.name,
-          altitude: match.altitude,
-          azimuth: match.azimuth,
-          constellation: match.constellation || "Unknown",
-          aboveHorizon: match.aboveHorizon ?? match.altitude >= 0,
-        });
-        setError(null);
-      } else {
-        setError(`${planetName} not found in API response`);
-      }
+      const pos: CalculatedPosition = calculateCelestialPosition(lat, lng, planetName);
+      setBody({
+        name: pos.name,
+        altitude: pos.altitude,
+        azimuth: pos.azimuth,
+        constellation: pos.constellation,
+        aboveHorizon: pos.aboveHorizon,
+        distanceKm: pos.distanceKm,
+        extraDetails: pos.extraDetails,
+      });
+      setError(null);
     } catch (e: any) {
-      setError(e.message || "Failed to fetch");
+      setError(e.message || "Failed to calculate position");
     } finally {
       setLoading(false);
     }
   }, [lat, lng, planetName]);
 
   useEffect(() => {
-    fetchPosition();
-    const interval = setInterval(fetchPosition, 30000);
+    calculatePosition();
+    // Update live position every second for real-time tracking
+    const interval = setInterval(calculatePosition, 1000);
     return () => clearInterval(interval);
-  }, [fetchPosition]);
+  }, [calculatePosition]);
 
   return { body, loading, error };
 }
