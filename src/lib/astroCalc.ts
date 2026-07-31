@@ -35,12 +35,11 @@ function getDaysSinceJ2000(date: Date): number {
   return (date.getTime() / 86400000) - 10957.5;
 }
 
-// Local Sidereal Time in degrees
+// Local Sidereal Time in degrees (Corrected: d already contains fractional day)
 function getLST(date: Date, lng: number): number {
   const d = getDaysSinceJ2000(date);
-  const utHours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
   const gmst0 = 280.46061837 + 360.98564736629 * d;
-  return norm(gmst0 + utHours * 15 + lng);
+  return norm(gmst0 + lng);
 }
 
 // Convert RA & Dec to Altitude and Azimuth for a given Lat, Lng and Date
@@ -165,7 +164,7 @@ const PLANET_ELEMENTS: Record<string, PlanetElements> = {
   Jupiter: { N0: 100.4542, Nd: 2.76854e-5, i0: 1.3030, id: -1.557e-7, w0: 273.8777, wd: 1.64505e-5, a0: 5.20256, ad: 0, e0: 0.048498, ed: 1.632e-9, M0: 19.8950, Md: 0.0830853001 },
   Saturn: { N0: 113.6655, Nd: 2.38980e-5, i0: 2.4886, id: -1.081e-7, w0: 339.3939, wd: 2.97661e-5, a0: 9.55475, ad: 0, e0: 0.055546, ed: -3.46e-9, M0: 316.9670, Md: 0.0334442282 },
   Uranus: { N0: 74.0005, Nd: 1.3978e-5, i0: 0.7733, id: 1.9e-8, w0: 96.6612, wd: 3.0565e-5, a0: 19.18171, ad: -1.55e-5, e0: 0.047318, ed: 7.45e-9, M0: 142.5905, Md: 0.011725806 },
-  Neptune: { N0: 131.7806, Nd: 3.0173e-5, i0: 1.7700, id: -2.55e-7, w0: 272.8461, wd: -6.027e-6, a0: 30.05826, ad: 3.313e-5, e0: 0.008606, ed: 2.15e-9, M0: 260.2471, Md: 0.005995147 },
+  Neptune: { N0: 131.7806, Nd: 3.0173e-5, i0: 1.7700, id: -2.55e-7, w0: 1.7700, wd: -6.027e-6, a0: 30.05826, ad: 3.313e-5, e0: 0.008606, ed: 2.15e-9, M0: 260.2471, Md: 0.005995147 },
   Pluto: { N0: 110.3034, Nd: 3.035e-5, i0: 17.14175, id: 1.1e-8, w0: 113.7634, wd: 3.02e-5, a0: 39.48168, ad: -4.2e-6, e0: 0.248807, ed: 6.4e-9, M0: 14.882, Md: 0.0039757 }
 };
 
@@ -286,8 +285,7 @@ export function calculateCelestialPosition(
   }
 
   if (nameLower.includes("iss") || nameLower.includes("station")) {
-    // ISS Orbit approximation (51.6° inclination)
-    const issRA = norm(d * 360 * 15.5); // ~15.5 orbits per day
+    const issRA = norm(d * 360 * 15.5);
     const { altitude, azimuth } = raDecToAltAz(issRA, 51.6 * Math.sin(d), lat, lng, date);
     return {
       name: "ISS (Space Station)",

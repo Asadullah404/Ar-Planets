@@ -23,7 +23,7 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-background">
+    <div className="min-h-screen w-full bg-background overflow-x-hidden text-foreground">
       <AnimatePresence mode="wait">
         {screen === "location" && (
           <motion.div
@@ -32,6 +32,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
+            className="min-h-screen w-full"
           >
             <LocationScreen onLocationSet={handleLocation} />
           </motion.div>
@@ -43,6 +44,7 @@ const Index = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
+            className="min-h-screen w-full overflow-y-auto"
           >
             <PlanetSelectScreen
               onSelect={handlePlanetSelect}
@@ -57,6 +59,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
+            className="h-screen w-screen overflow-hidden"
           >
             <ARFinderScreen
               lat={coords.lat}

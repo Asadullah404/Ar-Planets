@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TARGETS, TargetInfo, ALL_TARGETS_INFO } from "@/lib/planetData";
+import Planet3DViewer from "./Planet3DViewer";
 import Footer from "./Footer";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
-  const [filter, setFilter] = useState<"all" | "qibla" | "solar" | "star" | "landmark" | "custom">("all");
+  const [filter, setFilter] = useState<"all" | "qibla" | "solar" | "star" | "constellation" | "deepspace" | "comet" | "satellite" | "landmark">("all");
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -18,6 +19,9 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
   const [customLat, setCustomLat] = useState("");
   const [customLng, setCustomLng] = useState("");
   const [showCustomModal, setShowCustomModal] = useState(false);
+
+  // 3D Preview Modal Target
+  const [preview3DTarget, setPreview3DTarget] = useState<TargetInfo | null>(null);
 
   // Filter and Search logic
   const filteredTargets = TARGETS.filter((t) => {
@@ -80,7 +84,7 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
                 🌐 AR Target Hub A-Z
               </h1>
               <p className="font-body text-xs text-muted-foreground">
-                Universal AR Tracking Directory: Sacred Qibla, Solar Planets, Bright Stars & World Landmarks
+                Universal AR Directory: Sacred Qibla, Solar Planets, Stars, Constellations, Nebulae, Comets & Satellites
               </p>
             </div>
           </div>
@@ -121,7 +125,7 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
                 </span>
               </div>
               <p className="font-body text-xs text-purple-100/80 leading-relaxed">
-                View <strong>ALL 25+ targets (Planets, Stars, Kaaba Qibla & Landmarks) simultaneously</strong> in your AR camera sky feed!
+                View <strong>ALL 35+ targets (Planets, Stars, Constellations, Nebulae, Satellites & Landmarks) simultaneously</strong> in your AR camera sky feed!
               </p>
             </div>
           </div>
@@ -142,7 +146,7 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search A-Z targets (e.g. Kaaba, Mars, Sirius, Eiffel Tower)..."
+              placeholder="Search A-Z targets (e.g. Kaaba, Mars, Orion, Andromeda, JWST, Comet Halley)..."
               className="w-full rounded-2xl border border-border/50 bg-background/60 backdrop-blur-md pl-10 pr-4 py-3 font-body text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             {search && (
@@ -170,7 +174,11 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
             { id: "all", label: "✨ All Targets (A-Z)" },
             { id: "qibla", label: "🕋 Sacred & Qibla" },
             { id: "solar", label: "🪐 Solar System" },
-            { id: "star", label: "☀️ Stars & Space" },
+            { id: "star", label: "☀️ Stars" },
+            { id: "constellation", label: "🌌 Constellations" },
+            { id: "deepspace", label: "🌀 Deep Space & Nebulae" },
+            { id: "comet", label: "☄️ Comets" },
+            { id: "satellite", label: "🛰️ Satellites & Telescopes" },
             { id: "landmark", label: "🏙️ World Landmarks" },
           ].map((tab) => (
             <button
@@ -192,15 +200,12 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
           {filteredTargets.map((target, i) => {
             const isQibla = target.category === "qibla";
             return (
-              <motion.button
+              <motion.div
                 key={target.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                whileHover={{ y: -3 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => onSelect(target)}
-                className={`glass flex flex-col justify-between rounded-2xl p-5 text-left transition-all border ${
+                className={`glass flex flex-col justify-between rounded-2xl p-5 text-left transition-all border group ${
                   isQibla
                     ? "border-amber-500/40 bg-amber-950/20 hover:border-amber-400 hover:shadow-amber-500/10 shadow-lg"
                     : "border-border/40 hover:border-primary/50 hover:shadow-primary/10 shadow-md"
@@ -227,13 +232,22 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-border/30 font-body text-xs">
-                  <span className="text-muted-foreground">{target.type}</span>
-                  <span className="font-semibold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                <div className="flex items-center justify-between pt-3 border-t border-border/30 font-body text-xs gap-2">
+                  <button
+                    onClick={() => setPreview3DTarget(target)}
+                    className="rounded-lg bg-secondary/40 hover:bg-secondary border border-border/40 px-3 py-1.5 text-[11px] font-display font-medium text-foreground transition-all flex items-center gap-1 hover:border-primary/40"
+                  >
+                    🪐 3D View
+                  </button>
+
+                  <button
+                    onClick={() => onSelect(target)}
+                    className="font-semibold text-primary group-hover:translate-x-0.5 transition-transform flex items-center gap-1 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg px-3.5 py-1.5"
+                  >
                     Track AR ➔
-                  </span>
+                  </button>
                 </div>
-              </motion.button>
+              </motion.div>
             );
           })}
         </div>
@@ -254,6 +268,64 @@ export default function PlanetSelectScreen({ onSelect, onBack }: Props) {
           </div>
         )}
       </div>
+
+      {/* 3D WebGL Preview Modal */}
+      <AnimatePresence>
+        {preview3DTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setPreview3DTarget(null)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-strong w-full max-w-lg rounded-3xl p-6 border border-primary/40 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{preview3DTarget.emoji}</span>
+                  <div>
+                    <h2 className="font-display text-lg font-bold text-foreground">{preview3DTarget.name}</h2>
+                    <p className="font-body text-xs text-muted-foreground">{preview3DTarget.categoryLabel}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPreview3DTarget(null)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <Planet3DViewer target={preview3DTarget} className="h-64 w-full" />
+              </div>
+
+              <p className="font-body text-xs text-muted-foreground leading-relaxed mb-5">
+                {preview3DTarget.description}
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPreview3DTarget(null)}
+                  className="flex-1 rounded-xl border border-border py-3 font-display text-xs font-semibold text-muted-foreground hover:text-foreground"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    const t = preview3DTarget;
+                    setPreview3DTarget(null);
+                    onSelect(t);
+                  }}
+                  className="flex-1 rounded-xl bg-primary hover:bg-primary/90 py-3 font-display text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all"
+                >
+                  Launch Live AR Tracking ➔
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Custom Target Modal */}
       <AnimatePresence>

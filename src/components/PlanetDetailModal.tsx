@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CelestialBody } from "@/hooks/usePlanetPosition";
 import { PlanetInfo } from "@/lib/planetData";
+import Planet3DViewer from "./Planet3DViewer";
 
 interface Props {
     body: CelestialBody;
@@ -76,6 +77,11 @@ export default function PlanetDetailModal({ body, planet, onClose }: Props) {
 
                     {/* Scrollable content */}
                     <div className="overflow-y-auto px-5 pb-8" style={{ maxHeight: "calc(90vh - 120px)" }}>
+
+                        {/* Interactive 3D WebGL Model */}
+                        <div className="mb-4">
+                          <Planet3DViewer target={planet} className="h-56 w-full" />
+                        </div>
 
                         {/* Description */}
                         <p className="mb-5 font-body text-sm leading-relaxed text-muted-foreground">
